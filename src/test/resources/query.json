@@ -1,0 +1,32 @@
+{
+  "product.code": "200",
+  "product.age": {
+    "$lt": 20,
+    "$gt": 50,
+    "$in": [1,2,3]
+  },
+  "$and": {
+    "product.id": "1",
+    "product.name": {
+      "$eq": "Alex"
+    },
+    "product.services.name": {
+      "$contains": [
+        "Fortran",
+        "ALGOL",
+        "Backus-Naur Form",
+        "FP"
+      ]
+    },
+    "or": [
+      {
+        "product.attr1": "W.W. McDowell Award",
+        "product.attr2": "1995"
+      },
+      {
+        "product.attr3": "Draper Prize",
+        "product.attr4": "1995"
+      }
+    ]
+  }
+}
