@@ -1,32 +1,27 @@
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Element {
-    private Map<String, Element> items = new HashMap<String, Element>();
+    private Map<String, List<Element>> listItems = new HashMap<>();
+    private Map<String, Element> mapItems = new HashMap<>();
+    private Map<String, Object> simpleAttrs = new HashMap<>();
 
-    public Map<String, Element> getItems() {
-        return items;
+    public void addSimpleAttr(String key, Object attr) {
+        simpleAttrs.put(key, attr);
     }
 
-    public void setItems(Map<String, Element> items) {
-        this.items = items;
-    }
 
-    public Object getSimpleAttr() {
-        return simpleAttr;
-    }
-
-    public void setSimpleAttr(Object simpleAttr) {
-        this.simpleAttr = simpleAttr;
-    }
-
-    private Object simpleAttr;
+    //Может хранить простые атрибуты или списки примитивных типов
 
     public void addItem(String key, Element element) {
-        items.put(key, element);
+        mapItems.put(key, element);
     }
 
-    public Element removeItem(String key) {
-        return items.remove(key);
+    public void addListItem(String key, Element element) {
+        List<Element> list = listItems.computeIfAbsent(key, x -> new ArrayList());
+        list.add(element);
     }
+
 }
