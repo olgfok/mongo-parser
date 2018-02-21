@@ -1,3 +1,6 @@
+import enums.ConditionOperator;
+import enums.LogicalOperator;
+
 import java.util.List;
 import java.util.Map;
 
@@ -9,7 +12,6 @@ public class MongoParser {
         FilterItemGroupDto groupDto = new FilterItemGroupDto();
 
         collectFilters(groupDto, element);
-        System.out.println(groupDto);
 
     }
 
@@ -102,18 +104,12 @@ public class MongoParser {
     }
 
 
-    //TODO USE enum
     private boolean isConditionOperation(String key) {
-        return "$in".equalsIgnoreCase(key) ||
-                "$eq".equalsIgnoreCase(key) || "$gt".equalsIgnoreCase(key)
-                || "$lt".equalsIgnoreCase(key) ||
-                "$contains".equalsIgnoreCase(key);
+        return ConditionOperator.of(key) != null;
     }
 
-    //TODO USE enum
     private boolean isLogicalOperator(String key) {
-        return "$and".equalsIgnoreCase(key) ||
-                "$or".equalsIgnoreCase(key);
+        return LogicalOperator.of(key) != null;
     }
 
 }
