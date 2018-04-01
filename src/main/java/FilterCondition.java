@@ -1,5 +1,12 @@
 public class FilterCondition {
+    /**
+     * One of mongo comparison operators ($eq,$in..)
+     */
     private String operator;
+
+    /**
+     * Comparison operator's value (20, [1,2,3],"")
+     */
     private String value;
 
     public String getOperator() {

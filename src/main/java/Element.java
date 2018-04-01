@@ -3,6 +3,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class Element {
     public Map<String, List<Element>> getNestedLists() {
         return nestedLists;
@@ -16,16 +17,14 @@ public class Element {
         return simpleAttrs;
     }
 
-    private Map<String, List<Element>> nestedLists = new HashMap<>();
-    private Map<String, Element> nestedMaps = new HashMap<>();
-    private Map<String, Object> simpleAttrs = new HashMap<>();
+    private Map<String, List<Element>> nestedLists = new HashMap<>();//values are  lists of elements
+    private Map<String, Element> nestedMaps = new HashMap<>();//Map's value is an Element in itself
+    private Map<String, Object> simpleAttrs = new HashMap<>();//Object stores only primitive values (numeric,string,date or arrays of primitive types
 
     public void addSimpleAttr(String key, Object attr) {
         simpleAttrs.put(key, attr);
     }
 
-
-    //Может хранить простые атрибуты или списки примитивных типов
 
     public void addItem(String key, Element element) {
         nestedMaps.put(key, element);

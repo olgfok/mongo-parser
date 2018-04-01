@@ -1,33 +1,43 @@
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
 import org.junit.Test;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class MongoParserTest {
 
-    private static Gson gson = new GsonBuilder().create();
 
     private static String QUERY_FILE = "/query.json";
 
-    private static QueryDto readFromInputStream(InputStream inputStream)
-            throws IOException {
-        Reader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+    private List<String> simpleAttrs = Arrays.asList("product.code", "product.age");
 
-        JsonReader jsonReader = new JsonReader(bufferedReader);
-        QueryDto query = gson.fromJson(jsonReader, QueryDto.class);
-        return query;
-    }
-
-    private static QueryDto readFile() throws IOException {
-        InputStream inputStream = MongoParserTest.class.getResourceAsStream(QUERY_FILE);
-        return readFromInputStream(inputStream);
-    }
+    private List<String> simpleNestedAttrs = Arrays.asList("product.id", "product.services.name", "product.name");
 
     @Test
     public void testParser() throws IOException {
-        QueryDto dto = readFile();
-        new MongoParser().parse(dto);
+        RequestDto dto = TestUtils.readFile(QUERY_FILE);
+        FilterItemGroupDto groupDto = new MongoParser().parse(dto);
+        List<FilterItemDto> filters = groupDto.getFilters();
+        assertEquals(4, filters.size());
+        filters.forEach(filter -> assertTrue(simpleAttrs.contains(filter.getPath())));
+
+        //check nested map with filters
+        List<FilterItemGroupDto> nested = groupDto.getNested();
+        assertEquals(1, nested.size());
+
+        FilterItemGroupDto nestedFilter = nested.get(0);
+        assertEquals("$and", nestedFilter.getOperator());
+        filters = nestedFilter.getFilters();
+        assertEquals(3, filters.size());
+        filters.forEach(filter -> assertTrue(simpleNestedAttrs.contains(filter.getPath())));
+        nested = nestedFilter.getNested();
+        assertEquals(1, nested.size());
+        nestedFilter = nested.get(0);
+        assertEquals("$or", nestedFilter.getOperator());
+        assertEquals(4, nestedFilter.getFilters().size());
+
     }
 }

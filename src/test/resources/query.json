@@ -13,17 +13,17 @@
     "$and": {
       "product.id": "1",
       "product.name": {
-        "$eq": "Alex"
+        "$contains": "Alex"
       },
       "product.services.name": {
-        "$contains": [
+        "$in": [
           "Fortran",
           "ALGOL",
           "Backus-Naur Form",
           "FP"
         ]
       },
-      "or": [
+      "$or": [
         {
           "product.attr1": "W.W. McDowell Award",
           "product.attr2": "1995"

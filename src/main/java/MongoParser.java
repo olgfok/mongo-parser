@@ -1,17 +1,19 @@
 import enums.ConditionOperator;
 import enums.LogicalOperator;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 public class MongoParser {
 
-    public void parse(QueryDto query) {
+    public FilterItemGroupDto parse(RequestDto query) {
         Map<String, Object> map = query.getMap();
         Element element = parseMap(map);
         FilterItemGroupDto groupDto = new FilterItemGroupDto();
 
         collectFilters(groupDto, element);
+        return groupDto;
 
     }
 
@@ -24,7 +26,7 @@ public class MongoParser {
                 element.addSimpleAttr(item.getKey(), val);
             } else if (isMap(val)) {
                 element.addItem(item.getKey(), parseMap((Map) val));
-            } else if (isList(val)) {
+            } else if (isCollection(val)) {
                 for (Object listItem : (List) val) {
                     element.addListItem(item.getKey(), parseMap((Map) listItem));
                 }
@@ -38,17 +40,17 @@ public class MongoParser {
         return obj instanceof Map;
     }
 
-    private boolean isList(Object obj) {
-        return obj instanceof List;
+    private boolean isCollection(Object obj) {
+        return obj instanceof Collection;
     }
 
     private boolean isPrimitive(Object obj) {
         Class clazz = obj.getClass();
         boolean isPrimitive = clazz.isPrimitive()
                 || clazz.getName().startsWith("java.lang.");
-        if (!isPrimitive && isList(obj)) {
-            List list = (List) obj;
-            isPrimitive = (list.isEmpty() || isPrimitive(list.get(0)));
+        if (!isPrimitive && isCollection(obj)) {
+            Collection list = (Collection) obj;
+            isPrimitive = (list.isEmpty() || isPrimitive(list.iterator().next()));
         }
         return isPrimitive;
     }
@@ -60,7 +62,7 @@ public class MongoParser {
             String path = key;
             FilterCondition condition = new FilterCondition();
             condition.setValue(attr.getValue().toString());
-            if (isConditionOperation(key)) {
+            if (ConditionOperator.getByName(key) != null) {
                 condition.setOperator(key);
                 path = parentPath;
             }
@@ -70,23 +72,23 @@ public class MongoParser {
         }
     }
 
-    public void collectFilters(FilterItemGroupDto parent, Element element) {
+    private void collectFilters(FilterItemGroupDto parent, Element element) {
         Map<String, Object> simpleAttrs = element.getSimpleAttrs();
         createFiltersFromMap(simpleAttrs, parent, null);
 
         Map<String, Element> nestedMaps = element.getNestedMaps();
         for (Map.Entry<String, Element> nested : nestedMaps.entrySet()) {
             String key = nested.getKey();
-            if (!isLogicalOperator(key)) {
-                Element value = nested.getValue();
-                if (!value.getSimpleAttrs().isEmpty()) {
-                    createFiltersFromMap(nested.getValue().getSimpleAttrs(), parent, key);
-                }
-            } else {
+            if (LogicalOperator.getByName(key) != null) {
                 FilterItemGroupDto child = new FilterItemGroupDto();
                 collectFilters(child, nested.getValue());
                 parent.addChild(child);
                 child.setOperator(key);
+            } else {
+                Element value = nested.getValue();
+                if (!value.getSimpleAttrs().isEmpty()) {
+                    createFiltersFromMap(nested.getValue().getSimpleAttrs(), parent, key);
+                }
             }
         }
 
@@ -103,13 +105,5 @@ public class MongoParser {
 
     }
 
-
-    private boolean isConditionOperation(String key) {
-        return ConditionOperator.of(key) != null;
-    }
-
-    private boolean isLogicalOperator(String key) {
-        return LogicalOperator.of(key) != null;
-    }
 
 }
